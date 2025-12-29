@@ -8,6 +8,8 @@ import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Hotels from './pages/Hotels'
+import BookHotel from "./pages/BookHotel";
+import MyBookings from './pages/MyBookings'
 function App() {
   return (
     
