@@ -10,13 +10,16 @@ const Signup = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm();
 
+  // 🔹 Watch password for confirm password validation
+  const password = watch("password");
+
   // 🔹 Submit handler (json-server)
   const onSubmit = async (data) => {
-    // ❌ Do not store password (best practice for demo)
-    const { password, ...safeData } = data;
+    const { password, confirmPassword, ...safeData } = data;
 
     try {
       const res = await fetch("http://localhost:5000/users", {
@@ -55,7 +58,7 @@ const Signup = () => {
       className="flex flex-col items-center justify-center min-h-screen p-4"
       style={{
         backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-          url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1470&q=80')`,
+        url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1470&q=80')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
@@ -76,73 +79,105 @@ const Signup = () => {
         </motion.h2>
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-          {[
-            { name: "name", type: "text", placeholder: "Full Name" },
-            { name: "email", type: "email", placeholder: "Email Address" },
-            { name: "password", type: "password", placeholder: "Password" },
-            { name: "age", type: "number", placeholder: "Age" },
-            { name: "contact", type: "text", placeholder: "Contact Number" },
-            { name: "city", type: "text", placeholder: "City" },
-          ].map((field, i) => (
-            <div key={i}>
-              <motion.input
-                custom={i}
-                variants={fieldVariants}
-                initial="hidden"
-                animate="visible"
-                {...register(field.name, {
-                  required: `${field.placeholder} is required`,
-                })}
-                type={field.type}
-                placeholder={field.placeholder}
-                whileFocus={{ scale: 1.03 }}
-                className="p-3 rounded border border-gray-300 bg-white/80 
-                           focus:outline-none focus:border-yellow-500
-                           transition-all duration-300 w-full"
-              />
-
-              {errors[field.name] && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors[field.name].message}
-                </p>
-              )}
-            </div>
-          ))}
-
-          {/* 🔹 ID Proof */}
-          <motion.select
-            custom={6}
+          {/* Full Name */}
+          <motion.input
             variants={fieldVariants}
             initial="hidden"
             animate="visible"
-            {...register("idProof", {
-              required: "ID Proof is required",
-            })}
-            className="p-3 rounded border border-gray-300 bg-white/80 
-                       focus:outline-none focus:border-yellow-500"
-          >
-            <option value="">Select ID Proof</option>
-            <option value="Aadhar">Aadhar Card</option>
-            <option value="PAN">PAN Card</option>
-            <option value="DL">Driving License</option>
-            <option value="Voter">Voter ID</option>
-          </motion.select>
+            custom={0}
+            placeholder="Full Name"
+            {...register("name", { required: "Full Name is required" })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-          {errors.idProof && (
-            <p className="text-red-500 text-sm">{errors.idProof.message}</p>
+          {/* Email */}
+          <motion.input
+            variants={fieldVariants}
+            initial="hidden"
+            animate="visible"
+            custom={1}
+            type="email"
+            placeholder="Email Address"
+            {...register("email", { required: "Email is required" })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+
+          {/* Password */}
+          <motion.input
+            variants={fieldVariants}
+            initial="hidden"
+            animate="visible"
+            custom={2}
+            type="password"
+            placeholder="Password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.password && (
+            <p className="text-red-500">{errors.password.message}</p>
           )}
 
-          {/* 🔹 Submit Button */}
-          <motion.button
-            whileHover={{ scale: 1.07 }}
-            whileTap={{ scale: 0.95 }}
-            custom={7}
+          {/* Confirm Password */}
+          <motion.input
             variants={fieldVariants}
             initial="hidden"
             animate="visible"
+            custom={3}
+            type="password"
+            placeholder="Confirm Password"
+            {...register("confirmPassword", {
+              required: "Confirm Password is required",
+              validate: (value) =>
+                value === password || "Passwords do not match",
+            })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.confirmPassword && (
+            <p className="text-red-500">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+
+          {/* Contact */}
+          <motion.input
+            variants={fieldVariants}
+            initial="hidden"
+            animate="visible"
+            custom={4}
+            placeholder="Contact Number"
+            {...register("contact", { required: "Contact is required" })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.contact && (
+            <p className="text-red-500">{errors.contact.message}</p>
+          )}
+
+          {/* City */}
+          <motion.input
+            variants={fieldVariants}
+            initial="hidden"
+            animate="visible"
+            custom={5}
+            placeholder="City"
+            {...register("city", { required: "City is required" })}
+            className="p-3 rounded border border-gray-300"
+          />
+          {errors.city && <p className="text-red-500">{errors.city.message}</p>}
+
+          {/* Submit Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             type="submit"
-            className="bg-yellow-400 p-3 rounded font-bold 
-                       hover:bg-yellow-500 text-black"
+            className="bg-yellow-400 p-3 rounded font-bold hover:bg-yellow-500"
           >
             Sign Up
           </motion.button>
