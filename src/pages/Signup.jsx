@@ -14,29 +14,51 @@ const Signup = () => {
     formState: { errors },
   } = useForm();
 
-  // 🔹 Watch password for confirm password validation
   const password = watch("password");
 
-  // 🔹 Submit handler (json-server)
+  // 🔹 Submit handler (JSON-SERVER BASED – FIXED)
   const onSubmit = async (data) => {
-    const { password, confirmPassword, ...safeData } = data;
+    const { confirmPassword, ...userData } = data;
 
     try {
+      // 🔎 1. Check if email already exists
+      const checkRes = await fetch(
+        `http://localhost:5000/users?email=${userData.email}`
+      );
+      const existingUsers = await checkRes.json();
+
+      if (existingUsers.length > 0) {
+        alert("Email already registered. Please login.");
+        return;
+      }
+
+      // 📦 2. Save user to json-server
       const res = await fetch("http://localhost:5000/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(safeData),
+        body: JSON.stringify(userData),
       });
 
       if (!res.ok) {
         throw new Error("Failed to register");
       }
 
-      alert("Signup Successful!");
+      const savedUser = await res.json();
+
+      // 🔐 3. Save LOGIN STATE only (NO password)
+      localStorage.setItem(
+        "authUser",
+        JSON.stringify({
+          id: savedUser.id,
+          name: savedUser.name,
+          email: savedUser.email,
+        })
+      );
+
       reset();
-      navigate("/");
+      navigate("/"); // ✅ HOME REDIRECT
     } catch (error) {
       console.error(error);
       alert("Signup failed. Please try again.");
@@ -79,7 +101,6 @@ const Signup = () => {
         </motion.h2>
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-          {/* Full Name */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -91,7 +112,6 @@ const Signup = () => {
           />
           {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-          {/* Email */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -102,9 +122,10 @@ const Signup = () => {
             {...register("email", { required: "Email is required" })}
             className="p-3 rounded border border-gray-300"
           />
-          {errors.email && <p className="text-red-500">{errors.email.message}</p>}
+          {errors.email && (
+            <p className="text-red-500">{errors.email.message}</p>
+          )}
 
-          {/* Password */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -125,7 +146,6 @@ const Signup = () => {
             <p className="text-red-500">{errors.password.message}</p>
           )}
 
-          {/* Confirm Password */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -146,7 +166,6 @@ const Signup = () => {
             </p>
           )}
 
-          {/* Contact */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -160,7 +179,6 @@ const Signup = () => {
             <p className="text-red-500">{errors.contact.message}</p>
           )}
 
-          {/* City */}
           <motion.input
             variants={fieldVariants}
             initial="hidden"
@@ -170,9 +188,10 @@ const Signup = () => {
             {...register("city", { required: "City is required" })}
             className="p-3 rounded border border-gray-300"
           />
-          {errors.city && <p className="text-red-500">{errors.city.message}</p>}
+          {errors.city && (
+            <p className="text-red-500">{errors.city.message}</p>
+          )}
 
-          {/* Submit Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
